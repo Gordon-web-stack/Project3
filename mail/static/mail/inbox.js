@@ -20,14 +20,40 @@ function compose_email() {
   document.querySelector('#compose-recipients').value = '';
   document.querySelector('#compose-subject').value = '';
   document.querySelector('#compose-body').value = '';
+
+  document.querySelector('form').onsubmit = () => {
+ //get values for each element of the email
+    let compose_recipients = document.querySelector('#compose-recipients').value;
+    let compose_subject = document.querySelector('#compose-subject').value;
+    let compose_body = document.querySelector('#compose-body').value;
+  // post the email to the email db 
+    fetch('/emails', {
+      method: 'POST',
+      body: JSON.stringify({
+          recipients: compose_recipients,
+          subject: compose_subject,
+          body: compose_body
+      })
+    })
+    .then(response => response.json())
+    .then(result => {
+        // Print result
+        console.log(result);
+    });
+  }
 }
 
 function load_mailbox(mailbox) {
-  
+
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+
+  //Inbox
+  if (mailbox === "inbox"){
+    document.querySelector('#emails-view').innerHTML += '<h4>This is an inbox test</h4>';
+  }
 }
