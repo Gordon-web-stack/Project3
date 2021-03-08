@@ -52,8 +52,87 @@ function load_mailbox(mailbox) {
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
 
-  //Inbox
-  if (mailbox === "inbox"){
-    document.querySelector('#emails-view').innerHTML += '<h4>This is an inbox test</h4>';
+  //Sent emails
+  if (mailbox === "sent"){
+    fetch('/emails/sent')
+    .then(response => response.json())
+    .then(email => {
+    // Print email
+    console.log(email);
+      email.forEach(element => {
+        let email_view = document.querySelector('#emails-view')
+        let email_recipients = element.recipients;
+        let email_subject = element.subject;
+        let email_body = element.body;
+          
+        email_view.innerHTML += `<h2>${email_subject}</h2> <b1>${email_body}</b1></br>`;
+        email_recipients.forEach(element => {
+            email_view.innerHTML += `<h6>Recipient: ${element}</h6></br>`
+          });
+    });
+   
+});
   }
+   //--------------------------------------------------------
+
+   //inbox 
+   if(mailbox == "inbox"){
+    let email_view = document.querySelector('#emails-view')
+    fetch('/emails/inbox')
+    .then(response => response.json())
+    .then(emails => {
+        // Print emails
+        console.log(emails);
+          emails.forEach(element => {
+            let email_read = element.read;
+            let email_timestamp = element.timestamp;
+            let email_sender = element.sender;
+            let email_subject = element.subject;
+            let email_id = "email_id_"+ element.id;
+            if (email_read) {
+              //email has been read, needs a grey background
+              email_view.innerHTML += `
+              <div id=${email_id} style="border-style:groove; background-color: lightgray;">
+              <h2>${email_subject}</h2>
+              <b1>${email_sender}</b1></br>
+              <b3>${email_timestamp}</b3>
+              </div>
+              </br>`;
+            }
+            else{
+              //email has not been read needs a white background
+              email_view.innerHTML += `
+              <div id=${email_id} style="border-style:groove; ">
+              <h2>${email_subject}</h2>
+              <b1>${email_sender}</b1></br>
+              <b3>${email_timestamp}</b3>
+              </div>
+              </br>`;
+            }        
+          });
+          
+            emails.forEach(element => {
+              let email_id = element.id;
+              let div_id = '#email_id_'+ email_id;
+              document.querySelector(div_id).addEventListener('click', function(){
+                fetch('/emails/' + email_id, {
+                  method: 'PUT',
+                  body: JSON.stringify({
+                      read: true
+                  })
+                })
+                email_view.innerHTML = " "
+                email_view.innerHTML += `
+                <div style="border-style:groove; background-color: lightgray; ">
+                <h1>${element.subject}</h1>
+                <h6>${element.sender}</h6>
+                <h6>${element.timestamp}</h6>
+                <b1>${element.body}</b1>
+                </div>
+                `;
+                
+              });
+            });
+    });
+   }
 }
