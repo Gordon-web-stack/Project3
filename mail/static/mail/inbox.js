@@ -76,14 +76,15 @@ function load_mailbox(mailbox) {
    //--------------------------------------------------------
 
    //inbox 
-   if(mailbox == "inbox"){
+   if(mailbox === "inbox" || mailbox === "archive"){
     let email_view = document.querySelector('#emails-view')
-    fetch('/emails/inbox')
+    fetch('/emails/' + mailbox)
     .then(response => response.json())
     .then(emails => {
         // Print emails
         console.log(emails);
           emails.forEach(element => {
+            
             let email_read = element.read;
             let email_timestamp = element.timestamp;
             let email_sender = element.sender;
@@ -109,7 +110,7 @@ function load_mailbox(mailbox) {
               </div>
               </br>`;
             }        
-          });
+           });
           
             emails.forEach(element => {
               let email_id = element.id;
@@ -122,17 +123,50 @@ function load_mailbox(mailbox) {
                   })
                 })
                 email_view.innerHTML = " "
-                email_view.innerHTML += `
-                <div style="border-style:groove; background-color: lightgray; ">
-                <h1>${element.subject}</h1>
+                element.recipients.forEach(element => {
+                  email_view.innerHTML += `<li>${element}</li>`;
+                });
+                email_view.innerHTML += 
+                ` <h1>${element.subject}</h1>
                 <h6>${element.sender}</h6>
                 <h6>${element.timestamp}</h6>
                 <b1>${element.body}</b1>
+                </br>
+                </br>
                 </div>
                 `;
+                //Reply system
                 
+                //archive button 
+                if(!element.archived){
+                email_view.innerHTML += ` <button class="btn btn-sm btn-outline-primary" id="Archive">Archive</button>`;
+                let button = document.querySelector('#Archive');
+                button.addEventListener('click',function (){
+                  fetch('/emails/' + email_id, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        archived: true
+                    })
+                  });
+                  button.remove();
+                  email_view.innerHTML += ` <b6>Email Moved To Archive.</b6>`;
+                });
+              }else{
+                email_view.innerHTML += ` <button class="btn btn-sm btn-outline-primary" id="Archive">Remove From Archive</button>`;
+                let button = document.querySelector('#Archive');
+                button.addEventListener('click',function (){
+                  fetch('/emails/' + email_id, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        archived: false
+                    })
+                  });
+                  button.remove();
+                  email_view.innerHTML += ` <b6>Email Moved To Inbox.</b6>`;
+                });
+              }
               });
             });
     });
-   }
+  }
 }
